@@ -20,7 +20,7 @@ func CreateRabbitMQConnection() (*amqp.Connection, error) {
 func CreateSqlConnection() (*gorm.DB, error) {
 	db, err := gorm.Open("mysql", "root:password@tcp(localhost:3306)/mds")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to connect to db")
 	}
 
 	return db, nil
