@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	"mds/cmd/mds/messenger"
 	"mds/cmd/mds/server"
+	"mds/internal"
 )
 
 func main() {
@@ -19,7 +21,15 @@ func main() {
 	}
 	defer db.Close()
 
+	repo := internal.NewUserRepository(db)
+	rabbit := internal.NewRabbitMQ(conn)
+
+	service := messenger.NewService(repo, rabbit)
+
+	handler := server.NewHandler(service)
+
 	server.
 		New().
+		CreateRoutes(handler).
 		Listen()
 }
