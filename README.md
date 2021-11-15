@@ -20,4 +20,5 @@ unity message delivery system
 
 ## Run App
 - `docker-compose up` to build rabbitmq and sql images
-- go to location `cmd/mds` and run `go run main.go` 
+- add migration script in `cmd/mds/migration-script` and run `schema.sql`
+- go to location `cmd/mds` and run `go run main.go`
