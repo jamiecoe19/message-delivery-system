@@ -8,7 +8,3 @@ type RelayRequest struct {
 type RelayResponse struct {
 	Message interface{} `json: "message"`
 }
-
-func (response RelayResponse) Send() error {
-	return nil
-}

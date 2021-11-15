@@ -115,6 +115,5 @@ func (rabbit rabbitmq) Consume(queueName string) (string, error) {
 	}
 
 	data := <-msgs
-
 	return string(data.Body), nil
 }

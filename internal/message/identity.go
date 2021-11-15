@@ -7,7 +7,3 @@ type IdentityRequest struct {
 type IndentityResponse struct {
 	UserID uint64 `json:"userId"`
 }
-
-func (i IndentityResponse) Send() error {
-	return nil
-}
