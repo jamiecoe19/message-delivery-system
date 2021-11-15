@@ -36,6 +36,17 @@ func New() Server {
 }
 
 func (s Server) Listen() Server {
-	s.Logger.Fatal(s.Start(":8087"))
+	s.Logger.Fatal(s.Start(":8080"))
+	return s
+}
+
+func (s Server) CreateRoutes(handler Handler) Server {
+	s.GET("/connect", handler.Connect)
+	s.POST("/identity", handler.SendIdentiyMesasge)
+	s.POST("/list", handler.SendListMesasge)
+	s.GET("/messages", handler.GetMessage)
+	s.POST("/relay", handler.SendRelay)
+	s.DELETE("/disconnect", handler.Disconnect)
+
 	return s
 }
