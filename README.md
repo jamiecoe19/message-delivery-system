@@ -22,3 +22,8 @@ unity message delivery system
 - add migration script in `cmd/mds/migration-script` and run `schema.sql`
 - go to location `cmd/mds` and run `go run main.go`
     - all messages send will be displayed in the console with the name and rabbitmq queue id
+
+## Run e2e tests
+- `docker-compose up` to build rabbitmq and sql images
+- add migration script in `cmd/mds/migration-script` and run `schema.sql`
+- run package `integration_test.go`

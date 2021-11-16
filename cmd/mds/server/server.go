@@ -46,6 +46,8 @@ func (s Server) CreateRoutes(handler Handler) Server {
 	s.GET("/list", handler.SendListMesasge)
 	s.POST("/relay", handler.SendRelay)
 	s.DELETE("/disconnect", handler.Disconnect)
+	//integration test endpoints
+	s.GET("/get", handler.GetUser)
 
 	return s
 }

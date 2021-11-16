@@ -56,7 +56,7 @@ func (h Handler) Disconnect(c echo.Context) error {
 
 	resp := make(map[string]string)
 	resp["message"] = "Success"
-	return c.JSONPretty(http.StatusCreated, resp, " ")
+	return c.JSONPretty(http.StatusOK, resp, " ")
 
 }
 
@@ -100,4 +100,16 @@ func (h Handler) SendRelay(c echo.Context) error {
 	resp["message"] = "success"
 	return c.JSONPretty(http.StatusOK, resp, " ")
 
+}
+
+// integration test handlers
+func (h Handler) GetUser(c echo.Context) error {
+	name := c.QueryParam("name")
+
+	user, err := h.service.GetUser(name)
+	if err != nil {
+		return c.JSONPretty(http.StatusInternalServerError, err, " ")
+	}
+
+	return c.JSONPretty(http.StatusOK, user, " ")
 }

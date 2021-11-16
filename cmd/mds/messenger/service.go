@@ -14,6 +14,8 @@ type Service interface {
 	SendIdentity(name string) error
 	SendList(name string) error
 	SendRelay(name string, names []string, messageBody interface{}) error
+	//integration services
+	GetUser(name string) (message.User, error)
 }
 
 type service struct {
@@ -135,4 +137,17 @@ func (service service) SendRelay(name string, names []string, messageBody interf
 	}
 
 	return nil
+}
+
+func (service service) GetUser(name string) (message.User, error) {
+	user, err := service.repo.Get(name)
+	if err != nil {
+		return message.User{}, err
+	}
+
+	if user.UserID == 0 {
+		return message.User{}, fmt.Errorf("no id assoicated with user")
+	}
+
+	return user, nil
 }
