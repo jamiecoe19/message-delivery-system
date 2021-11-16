@@ -13,7 +13,7 @@ type Service interface {
 	Disconnect(name string) error
 	SendIdentity(name string) error
 	SendList(name string) error
-	SendRelay(name string, message interface{}) error
+	SendRelay(name string, names []string, messageBody interface{}) error
 }
 
 type service struct {
@@ -115,7 +115,7 @@ func (service service) SendList(name string) error {
 	return nil
 }
 
-func (service service) SendRelay(name string, messageBody interface{}) error {
+func (service service) SendRelay(name string, names []string, messageBody interface{}) error {
 	users, err := service.repo.GetAll()
 	if err != nil {
 		return err
@@ -123,32 +123,16 @@ func (service service) SendRelay(name string, messageBody interface{}) error {
 
 	max := 254
 	for index, user := range users {
-		if index == max {
-			fmt.Print("max number of users")
-		}
-		if user.Name != name {
-			err = service.rabbit.Publish(fmt.Sprintf("%d", user.UserID), message.RelayResponse{Message: messageBody})
-			if err != nil {
-				return err
+		if index != max {
+			if internal.Contains(names, user.Name) {
+				err = service.rabbit.Publish(fmt.Sprintf("%d", user.UserID), message.RelayResponse{Message: messageBody})
+				if err != nil {
+					return err
+				}
+				max = +1
 			}
-			max = +1
 		}
 	}
 
 	return nil
 }
-
-// func (service service) GetMessage(name string) (string, error) {
-
-// 	user, err := service.repo.Get(name)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	msg, err := service.rabbit.Consume(fmt.Sprintf("%d", user.UserID))
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	return msg, nil
-// }

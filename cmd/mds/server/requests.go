@@ -9,6 +9,7 @@ type ListRequest struct {
 }
 
 type RelayRequest struct {
-	Name    string      `query:"name"`
-	Message interface{} `json:"message"`
+	Sender     string      `json:"sender"`
+	Recipients []string    `json:"recipients"`
+	Message    interface{} `json:"message"`
 }

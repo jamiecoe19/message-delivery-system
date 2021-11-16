@@ -61,12 +61,9 @@ func (h Handler) Disconnect(c echo.Context) error {
 }
 
 func (h Handler) SendIdentiyMesasge(c echo.Context) error {
-	request := new(IndentityRequest)
-	if err := c.Bind(request); err != nil {
-		return c.JSONPretty(http.StatusBadRequest, err, " ")
-	}
+	user := c.QueryParam("name")
 
-	err := h.service.SendIdentity(request.Name)
+	err := h.service.SendIdentity(user)
 	if err != nil {
 		return c.JSONPretty(http.StatusInternalServerError, err, " ")
 	}
@@ -77,12 +74,9 @@ func (h Handler) SendIdentiyMesasge(c echo.Context) error {
 }
 
 func (h Handler) SendListMesasge(c echo.Context) error {
-	request := new(ListRequest)
-	if err := c.Bind(request); err != nil {
-		return c.JSONPretty(http.StatusBadRequest, err, " ")
-	}
+	user := c.QueryParam("name")
 
-	if err := h.service.SendList(request.Name); err != nil {
+	if err := h.service.SendList(user); err != nil {
 		return c.JSONPretty(http.StatusInternalServerError, err, " ")
 	}
 
@@ -92,12 +86,12 @@ func (h Handler) SendListMesasge(c echo.Context) error {
 }
 
 func (h Handler) SendRelay(c echo.Context) error {
-	query := new(RelayRequest)
-	if err := c.Bind(query); err != nil {
+	request := new(RelayRequest)
+	if err := c.Bind(request); err != nil {
 		return c.JSONPretty(http.StatusBadRequest, err, " ")
 	}
 
-	err := h.service.SendRelay(query.Name, c.Request().Body)
+	err := h.service.SendRelay(request.Sender, request.Recipients, request.Message)
 	if err != nil {
 		return c.JSONPretty(http.StatusInternalServerError, err, " ")
 	}
