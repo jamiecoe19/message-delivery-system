@@ -3,6 +3,7 @@ services:
   rabbitmq3:
       container_name: "rabbitmq"
       image: rabbitmq:3.8-management
+      hostname: 812dce69b966
       environment:
           - RABBITMQ_DEFAULT_USER=guest
           - RABBITMQ_DEFAULT_PASS=guest

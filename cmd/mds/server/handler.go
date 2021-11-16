@@ -23,10 +23,10 @@ func NewHandler(service messenger.Service) Handler {
 
 func StartQueue(stop chan (bool), msgs <-chan amqp.Delivery, ID string, name string) {
 	for d := range msgs {
-		fmt.Printf("user: %s \n queue ID: %s \n get message %s \n", name, ID, d.Body)
+		fmt.Printf("recipient: %s \nqueue id: %s \nmessage: %s \n", name, ID, d.Body)
 	}
 	<-stop
-	fmt.Printf("closing queue with user %s with ID %s \n", name, ID)
+	fmt.Printf("sign out user: %s has signed out \n", name)
 }
 
 func (h Handler) Connect(c echo.Context) error {
@@ -39,9 +39,7 @@ func (h Handler) Connect(c echo.Context) error {
 		return c.JSONPretty(http.StatusInternalServerError, err, " ")
 	}
 
-	resp := make(map[string]string)
-	resp["message"] = "Success"
-	return c.JSONPretty(http.StatusCreated, resp, " ")
+	return c.JSONPretty(http.StatusCreated, NewSuccessfulResponse(), " ")
 
 }
 
@@ -54,9 +52,7 @@ func (h Handler) Disconnect(c echo.Context) error {
 
 	h.stopChannel[name] <- true
 
-	resp := make(map[string]string)
-	resp["message"] = "Success"
-	return c.JSONPretty(http.StatusOK, resp, " ")
+	return c.JSONPretty(http.StatusOK, NewSuccessfulResponse(), " ")
 
 }
 
@@ -68,9 +64,7 @@ func (h Handler) SendIdentiyMesasge(c echo.Context) error {
 		return c.JSONPretty(http.StatusInternalServerError, err, " ")
 	}
 
-	resp := make(map[string]string)
-	resp["message"] = "success"
-	return c.JSONPretty(http.StatusOK, resp, " ")
+	return c.JSONPretty(http.StatusOK, NewSuccessfulResponse(), " ")
 }
 
 func (h Handler) SendListMesasge(c echo.Context) error {
@@ -80,9 +74,7 @@ func (h Handler) SendListMesasge(c echo.Context) error {
 		return c.JSONPretty(http.StatusInternalServerError, err, " ")
 	}
 
-	resp := make(map[string]string)
-	resp["message"] = "success"
-	return c.JSONPretty(http.StatusOK, resp, " ")
+	return c.JSONPretty(http.StatusOK, NewSuccessfulResponse(), " ")
 }
 
 func (h Handler) SendRelay(c echo.Context) error {
@@ -96,9 +88,7 @@ func (h Handler) SendRelay(c echo.Context) error {
 		return c.JSONPretty(http.StatusInternalServerError, err, " ")
 	}
 
-	resp := make(map[string]string)
-	resp["message"] = "success"
-	return c.JSONPretty(http.StatusOK, resp, " ")
+	return c.JSONPretty(http.StatusOK, NewSuccessfulResponse(), " ")
 
 }
 
