@@ -1,25 +1,40 @@
 package server
 
 import (
+	"fmt"
 	"mds/cmd/mds/messenger"
 	"net/http"
 
 	"github.com/labstack/echo"
+	"github.com/streadway/amqp"
 )
 
 type Handler struct {
-	service messenger.Service
+	service     messenger.Service
+	stopChannel map[string]chan (bool)
 }
 
 func NewHandler(service messenger.Service) Handler {
 	return Handler{
-		service: service,
+		service:     service,
+		stopChannel: make(map[string]chan bool),
 	}
+}
+
+func StartQueue(stop chan (bool), msgs <-chan amqp.Delivery, ID string, name string) {
+	for d := range msgs {
+		fmt.Printf("user: %s in queue: %s get message %s \n", name, ID, d.Body)
+	}
+	<-stop
+	fmt.Printf("closing user %s queue %s \n", name, ID)
 }
 
 func (h Handler) Connect(c echo.Context) error {
 	name := c.QueryParam("name")
-	err := h.service.Connect(name)
+
+	h.stopChannel[name] = make(chan (bool))
+
+	err := h.service.Connect(name, h.stopChannel[name], StartQueue)
 	if err != nil {
 		return c.JSONPretty(http.StatusInternalServerError, err, " ")
 	}
@@ -36,6 +51,8 @@ func (h Handler) Disconnect(c echo.Context) error {
 	if err != nil {
 		return c.JSONPretty(http.StatusInternalServerError, err, " ")
 	}
+
+	h.stopChannel[name] <- true
 
 	resp := make(map[string]string)
 	resp["message"] = "Success"
@@ -89,14 +106,4 @@ func (h Handler) SendRelay(c echo.Context) error {
 	resp["message"] = "success"
 	return c.JSONPretty(http.StatusOK, resp, " ")
 
-}
-
-func (h Handler) GetMessage(c echo.Context) error {
-	name := c.QueryParam("name")
-	msgs, err := h.service.GetMessage(name)
-	if err != nil {
-		return c.JSONPretty(http.StatusInternalServerError, err, " ")
-	}
-
-	return c.JSONPretty(http.StatusOK, msgs, " ")
 }

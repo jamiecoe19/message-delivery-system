@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"mds/internal"
 	"mds/internal/message"
+
+	"github.com/streadway/amqp"
 )
 
 type Service interface {
-	Connect(name string) error
+	Connect(name string, stop chan (bool), startQueue func(chan (bool), <-chan amqp.Delivery, string, string)) error
 	Disconnect(name string) error
 	SendIdentity(name string) error
 	SendList(name string) error
 	SendRelay(name string, message interface{}) error
-	GetMessage(name string) (string, error)
+	// GetMessage(name string) (string, error)
 }
 
 type service struct {
@@ -27,7 +29,7 @@ func NewService(repo internal.UserRepository, rabbit internal.RabbitMQ) Service 
 	}
 }
 
-func (service service) Connect(name string) error {
+func (service service) Connect(name string, stop chan (bool), startQueue func(chan (bool), <-chan amqp.Delivery, string, string)) error {
 	id, err := service.repo.Create(message.User{Name: name})
 	if err != nil {
 		return err
@@ -41,6 +43,13 @@ func (service service) Connect(name string) error {
 	if err != nil {
 		return err
 	}
+
+	delivery, err := service.rabbit.Consume(fmt.Sprintf("%d", id))
+	if err != nil {
+		return err
+	}
+
+	go startQueue(stop, delivery, fmt.Sprintf("%d", id), name)
 
 	return nil
 }
@@ -125,17 +134,17 @@ func (service service) SendRelay(name string, messageBody interface{}) error {
 	return nil
 }
 
-func (service service) GetMessage(name string) (string, error) {
+// func (service service) GetMessage(name string) (string, error) {
 
-	user, err := service.repo.Get(name)
-	if err != nil {
-		return "", err
-	}
+// 	user, err := service.repo.Get(name)
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	msg, err := service.rabbit.Consume(fmt.Sprintf("%d", user.UserID))
-	if err != nil {
-		return "", err
-	}
+// 	msg, err := service.rabbit.Consume(fmt.Sprintf("%d", user.UserID))
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	return msg, nil
-}
+// 	return msg, nil
+// }

@@ -11,7 +11,7 @@ type RabbitMQ interface {
 	CreateQueue(queueName string) error
 	DeleteQueue(queueName string) error
 	Publish(queueName string, message message.Message) error
-	Consume(queueName string) (string, error)
+	Consume(queueName string) (<-chan amqp.Delivery, error)
 }
 
 type rabbitmq struct {
@@ -48,6 +48,8 @@ func (rabbit rabbitmq) DeleteQueue(userId string) error {
 	if err != nil {
 		return err
 	}
+
+	defer ch.Close()
 
 	return nil
 }
@@ -87,18 +89,16 @@ func (rabbit rabbitmq) Publish(queueName string, message message.Message) error 
 	return nil
 }
 
-func (rabbit rabbitmq) Consume(queueName string) (string, error) {
+func (rabbit rabbitmq) Consume(queueName string) (<-chan amqp.Delivery, error) {
 
 	ch, err := rabbit.conn.Channel()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-
-	defer ch.Close()
 
 	queue, err := ch.QueueInspect(queueName)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	msgs, err := ch.Consume(
@@ -111,9 +111,8 @@ func (rabbit rabbitmq) Consume(queueName string) (string, error) {
 		nil,
 	)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	data := <-msgs
-	return string(data.Body), nil
+	return msgs, nil
 }
