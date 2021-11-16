@@ -14,7 +14,6 @@ type Service interface {
 	SendIdentity(name string) error
 	SendList(name string) error
 	SendRelay(name string, message interface{}) error
-	// GetMessage(name string) (string, error)
 }
 
 type service struct {
@@ -122,12 +121,17 @@ func (service service) SendRelay(name string, messageBody interface{}) error {
 		return err
 	}
 
-	for _, user := range users {
+	max := 254
+	for index, user := range users {
+		if index == max {
+			fmt.Print("max number of users")
+		}
 		if user.Name != name {
 			err = service.rabbit.Publish(fmt.Sprintf("%d", user.UserID), message.RelayResponse{Message: messageBody})
 			if err != nil {
 				return err
 			}
+			max = +1
 		}
 	}
 

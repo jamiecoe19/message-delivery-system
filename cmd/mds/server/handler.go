@@ -23,10 +23,10 @@ func NewHandler(service messenger.Service) Handler {
 
 func StartQueue(stop chan (bool), msgs <-chan amqp.Delivery, ID string, name string) {
 	for d := range msgs {
-		fmt.Printf("user: %s in queue: %s get message %s \n", name, ID, d.Body)
+		fmt.Printf("user: %s \n queue ID: %s \n get message %s \n", name, ID, d.Body)
 	}
 	<-stop
-	fmt.Printf("closing user %s queue %s \n", name, ID)
+	fmt.Printf("closing queue with user %s with ID %s \n", name, ID)
 }
 
 func (h Handler) Connect(c echo.Context) error {
@@ -92,12 +92,12 @@ func (h Handler) SendListMesasge(c echo.Context) error {
 }
 
 func (h Handler) SendRelay(c echo.Context) error {
-	request := new(RelayRequest)
-	if err := c.Bind(request); err != nil {
+	query := new(RelayRequest)
+	if err := c.Bind(query); err != nil {
 		return c.JSONPretty(http.StatusBadRequest, err, " ")
 	}
 
-	err := h.service.SendRelay(request.Name, request.Message)
+	err := h.service.SendRelay(query.Name, c.Request().Body)
 	if err != nil {
 		return c.JSONPretty(http.StatusInternalServerError, err, " ")
 	}
