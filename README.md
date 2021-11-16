@@ -26,4 +26,4 @@ unity message delivery system
 ## Run e2e tests
 - `docker-compose up` to build rabbitmq and sql images
 - add migration script in `cmd/mds/migration-script` and run `schema.sql`
-- run package `e2e`
+- run package `e2e` in `cmd` directory
