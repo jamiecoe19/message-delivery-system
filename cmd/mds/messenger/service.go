@@ -50,7 +50,7 @@ func (service service) Connect(name string, stop chan (bool), startQueue func(ch
 		return err
 	}
 
-	go startQueue(stop, delivery, fmt.Sprintf("%d", id), name)
+	startQueue(stop, delivery, fmt.Sprintf("%d", id), name)
 
 	return nil
 }

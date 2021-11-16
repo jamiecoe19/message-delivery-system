@@ -76,7 +76,7 @@ func marshalReplayRequestJson(t *testing.T, body RelayRequest) []byte {
 }
 
 func ParseUser(res *http.Response) (User, error) {
-	body, err := ReadResponse(res)
+	body, err := readResponse(res)
 	if err != nil {
 		return User{}, err
 	}
@@ -89,7 +89,7 @@ func ParseUser(res *http.Response) (User, error) {
 
 }
 
-func ReadResponse(res *http.Response) ([]byte, error) {
+func readResponse(res *http.Response) ([]byte, error) {
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {

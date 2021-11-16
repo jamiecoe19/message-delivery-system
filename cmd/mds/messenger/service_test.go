@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/streadway/amqp"
 )
 
 func TestConnect(t *testing.T) {
@@ -17,16 +18,29 @@ func TestConnect(t *testing.T) {
 	IDString := "1234567890"
 	name := "test"
 
+	startQueueCalled := false
+
+	startQueue := func(chan (bool), <-chan amqp.Delivery, string, string) {
+		startQueueCalled = true
+	}
+
+	var delivery <-chan amqp.Delivery
+
 	mockRepo := mockInternal.NewMockUserRepository(mockCtrl)
 	mockRabbit := mockInternal.NewMockRabbitMQ(mockCtrl)
 	mockRepo.EXPECT().Create(message.User{Name: name}).Return(ID, nil)
 	mockRabbit.EXPECT().CreateQueue(IDString).Return(nil)
+	mockRabbit.EXPECT().Consume(IDString).Return(delivery, nil)
 
 	srv := messenger.NewService(mockRepo, mockRabbit)
 
-	err := srv.Connect(name)
+	err := srv.Connect(name, make(chan bool), startQueue)
 	if err != nil {
 		t.Errorf("expected nil, got %s", err)
+	}
+
+	if !startQueueCalled {
+		t.Errorf("startQueue was never used")
 	}
 }
 
@@ -130,7 +144,7 @@ func TestSendRelay(t *testing.T) {
 		},
 		message.User{
 			UserID: 121241231231,
-			Name:   "test1",
+			Name:   "test2",
 		},
 		message.User{
 			UserID: 29128309128,
@@ -153,34 +167,8 @@ func TestSendRelay(t *testing.T) {
 
 	srv := messenger.NewService(mockRepo, mockRabbit)
 
-	err := srv.SendRelay("myself", "a test message")
+	err := srv.SendRelay("myself", []string{"test1", "test2"}, "a test message")
 	if err != nil {
 		t.Errorf("expected nil, got %s", err)
 	}
-}
-
-func TestGetMessage(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-
-	name := "test"
-	ID := uint64(12134123123)
-	IDString := "12134123123"
-	user := message.User{UserID: ID, Name: name}
-
-	mockRepo := mockInternal.NewMockUserRepository(mockCtrl)
-	mockRabbit := mockInternal.NewMockRabbitMQ(mockCtrl)
-	mockRepo.EXPECT().Get(name).Return(user, nil)
-	mockRabbit.EXPECT().Consume(IDString).Return("msg", nil)
-
-	srv := messenger.NewService(mockRepo, mockRabbit)
-	msg, err := srv.GetMessage(name)
-	if err != nil {
-		t.Errorf("expected nil, got %s", err)
-	}
-
-	if msg != "msg" {
-		t.Errorf("expected %s, got %s", "msg", msg)
-	}
-
 }

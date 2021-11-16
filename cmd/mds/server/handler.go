@@ -22,11 +22,13 @@ func NewHandler(service messenger.Service) Handler {
 }
 
 func StartQueue(stop chan (bool), msgs <-chan amqp.Delivery, ID string, name string) {
-	for d := range msgs {
-		fmt.Printf("recipient: %s \nqueue id: %s \nmessage: %s \n", name, ID, d.Body)
-	}
-	<-stop
-	fmt.Printf("sign out user: %s has signed out \n", name)
+	go func() {
+		for d := range msgs {
+			fmt.Printf("recipient: %s \nqueue id: %s \nmessage: %s \n", name, ID, d.Body)
+		}
+		<-stop
+		fmt.Printf("sign out user: %s has signed out \n", name)
+	}()
 }
 
 func (h Handler) Connect(c echo.Context) error {
