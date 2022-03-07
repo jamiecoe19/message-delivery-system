@@ -1,5 +1,5 @@
 # message-delivery-system
-unity message delivery system
+message delivery system
 
 ## Requirements
 - golang
